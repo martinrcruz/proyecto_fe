@@ -8,11 +8,11 @@ class Calendario_model extends CI_Model
     }
 
 
-    public function getCalendario($where='')
+    public function getCalendario($where = '')
     {
         $sql = "SELECT a.*,
         a.id_agendamiento as id_agendamiento,
-        a.id_jugador as id_usuario,
+        a.id_usuario as id_usuario,
         u1.id as id_1,
         CONCAT(u1.first_name, ' ', u1.last_name) as nombre_1,
         u2.id as id_2,
@@ -40,11 +40,11 @@ class Calendario_model extends CI_Model
             return false;
     }
 
-    public function getCalendarioById($where='')
+    public function getCalendarioById($where = '')
     {
         $sql = "SELECT a.*,
         a.id_agendamiento as id_agendamiento,
-        a.id_jugador as id_usuario,
+        a.id_usuario as id_usuario,
         u1.id as id_1,
         CONCAT(u1.first_name, ' ', u1.last_name) as nombre_1,
         u2.id as id_2,
@@ -75,32 +75,34 @@ class Calendario_model extends CI_Model
     public function addCalendario($tabla, $data)
     {
         $query = $this->db->insert($tabla, $data);
-		if ($query)
-			return $this->db->insert_id();
-		else
-			return false;
+        // var_dump($this->db->last_query());
+
+        if ($query)
+            return $this->db->insert_id();
+        else
+            return false;
     }
 
     public function updateCalendario($tabla, $comparar, $datos, $id)
     {
-    	$this->db->where($comparar, $id);
-		$result = $this->db->update($tabla, $datos);
-		if ($result)
-			return true;
-		else
-			return false;
+        $this->db->where($comparar, $id);
+        $result = $this->db->update($tabla, $datos);
+        if ($result)
+            return true;
+        else
+            return false;
     }
 
-    public function deleteCalendario($where){
+    public function deleteCalendario($where)
+    {
 
         $sql = "DELETE FROM agendamiento WHERE $where";
         $query = $this->db->query($sql);
         var_dump($this->db->last_query());
-  
+
         if ($query)
             return true;
         else
             return false;
-      }
-
+    }
 }

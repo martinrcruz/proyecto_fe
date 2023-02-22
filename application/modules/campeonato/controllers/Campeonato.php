@@ -1,42 +1,19 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Reporte extends CI_Controller
+class Campeonato extends CI_Controller
 {
     function __construct()
     {
         parent::__construct();
-        $this->load->model('reporte_model');
+        $this->load->model('campeonato_model');
         $this->load->library(['ion_auth', 'form_validation']);
 
         date_default_timezone_set('America/Santiago');
     }
 
-    public function getLastId()
-    {
-        $request = new stdClass();
-        $request->id = null;
-        $request->data = [];
 
-        $fecha = date('Y-m-d H:i:s');
-
-        //DECLARACION DE VARIABLES, OBJETOS Y ARRAYS DE [RESPUESTA]
-        $response = new stdClass();
-        $response->id = null;
-        $response->data = [];
-        $response->proceso = 0;
-        $response->errores = [];
-        if ($res = $this->reporte_model->getLastId()) {
-            foreach ($res->result() as $r) {
-                $row = new stdClass();
-                $id_reporte = $r->LAST_ID;
-            }
-            $response->proceso = 1;
-        }
-        echo json_encode($id_reporte);
-    }
-
-    public function getReporte()
+    public function getCampeonato()
     {
         if (true) {
             //DECLARACION DE VARIABLES, OBJETOS Y ARRAYS DE [PETICION]
@@ -53,19 +30,20 @@ class Reporte extends CI_Controller
             $response->proceso = 0;
             $response->errores = [];
 
-            if (sizeof($response->errores) == 0) {
-                if ($query = $this->reporte_model->getReporte()) {
-                    foreach ($query->result() as $res) {
-                        $row = null;
-                        $row = new stdClass();
-                        $row->id_reporte = $res->ID_REPORTE;
-                        $row->id_orden_trabajo = $res->ID_ORDEN_TRABAJO;
-                        $row->id_detalle_reporte = $res->ID_DETALLE_REPORTE;
-                        $row->instalacion = $res->INSTALACION;
 
-                        array_push($response->data, $row);
-                    }
-                    $response->proceso = 1;
+            if ($query = $this->campeonato_model->getCampeonato()) {
+                foreach ($query->result() as $res) {
+                    $row = null;
+                    $row = new stdClass();
+                    $row->id_campeonato = $res->id_campeonato;
+                    $row->id_usuario = $res->id_usuario;
+                    $row->titulo = $res->titulo;
+                    $row->descripcion = $res->descripcion;
+                    $row->fecha_inicio = $res->fecha_inicio;
+                    $row->fecha_fin = $res->fecha_fin;
+        
+
+                    array_push($response->data, $row);
                 }
             }
             echo json_encode($response);
@@ -74,11 +52,9 @@ class Reporte extends CI_Controller
         }
     }
 
-
-    public function getReporteById()
+    public function getCampeonatoById()
     {
         if (true) {
-
             //DECLARACION DE VARIABLES, OBJETOS Y ARRAYS DE [PETICION]
             $request = new stdClass();
             $request->id = null;
@@ -88,47 +64,40 @@ class Reporte extends CI_Controller
 
             //DECLARACION DE VARIABLES, OBJETOS Y ARRAYS DE [RESPUESTA]
             $response = new stdClass();
+            $response->id = null;
             $response->data = [];
             $response->proceso = 0;
             $response->errores = [];
 
+            $id_campeonato = "";
 
-            //DECLARACION DE VARIABLES DE FILTRO PARA QUERY
-            $where = '';
-
-            if ($this->input->post('id_reporte')) {
-                $request->id = $this->security->xss_clean($this->input->post('id_reporte'));
-            } else { //SI NO, ALMACENAMOS EL ERROR EN UN ARRAY PARA DEVOLVERLO COMO RESPUESTA.
-                $response->errores[] = "Ocurrió un problema al obtener la solicitud";
+            if (!empty($this->input->post('id_campeonato'))) {
+                $id_campeonato = $this->security->xss_clean($this->input->post('id_campeonato'));
             }
 
-            $request->id ? $where = " AND r.id_reporte=$request->id" : $where = '';
+            $where = " WHERE id_campeonato = " . $id_campeonato;
 
+            if ($query = $this->campeonato_model->getCampeonatoById($where)) {
+                foreach ($query->result() as $res) {
+                    $row = null;
+                    $row = new stdClass();
+                    $row->id_campeonato = $res->id_campeonato;
+                    $row->id_usuario = $res->id_usuario;
+                    $row->titulo = $res->titulo;
+                    $row->descripcion = $res->descripcion;
+                    $row->fecha_inicio = $res->fecha_inicio;
+                    $row->fecha_fin = $res->fecha_fin;
 
-            if (sizeof($response->errores) == 0) {
-                if ($query = $this->reporte_model->getReporteBox($where)) {
-                    foreach ($query->result() as $res) {
-                        $row = null;
-                        $row = new stdClass();
-                        $row->id_reporte = $res->ID_REPORTE;
-                        $row->id_orden_trabajo = $res->ID_ORDEN_TRABAJO;
-                        $row->id_detalle_reporte = $res->ID_DETALLE_REPORTE;
-                        $row->instalacion = $res->INSTALACION;
-
-
-                        array_push($response->data, $row);
-                    }
-                    $response->proceso = 1;
+                    array_push($response->data, $row);
                 }
             }
-
             echo json_encode($response);
         } else {
             redirect('auth/login', 'refresh');
         }
     }
 
-    public function insertReporte()
+    public function addCampeonato()
     {
         if (true) {
 
@@ -147,37 +116,51 @@ class Reporte extends CI_Controller
             $response->errores = [];
 
 
-     
-            if (!empty($this->input->post('id_orden_trabajo'))) {
-                $request->id_orden_trabajo = $this->security->xss_clean($this->input->post('id_orden_trabajo'));
-            }
-            if (!empty($this->input->post('id_detalle_reporte'))) {
-                $request->id_detalle_reporte = $this->security->xss_clean($this->input->post('id_detalle_reporte'));
-            }
-            if (!empty($this->input->post('instalacion'))) {
-                $request->instalacion = $this->security->xss_clean($this->input->post('instalacion'));
+            if (!empty($this->input->post('id_usuario'))) {
+                $request->id_usuario = $this->security->xss_clean($this->input->post('id_usuario'));
             }
 
+            if (!empty($this->input->post('titulo'))) {
+                $request->titulo = $this->security->xss_clean($this->input->post('titulo'));
+            }
 
+            if (!empty($this->input->post('descripcion'))) {
+                $request->descripcion = $this->security->xss_clean($this->input->post('descripcion'));
+            }
+
+            if (!empty($this->input->post('fecha_inicio'))) {
+                $request->fecha_inicio = $this->security->xss_clean($this->input->post('fecha_inicio'));
+            }
+
+            if (!empty($this->input->post('fecha_fin'))) {
+                $request->fecha_fin = $this->security->xss_clean($this->input->post('fecha_fin'));
+            }
+
+            if (!empty($this->input->post('id_listado_jugadores'))) {
+                $request->id_listado_jugadores = $this->security->xss_clean($this->input->post('id_listado_jugadores'));
+            }
 
 
 
             //ALMACENAMOS LOS DATOS QUE VIENEN DEL POST, QUE REEMPLAZARAN A LA FILA ACTUAL EN LA BASE DE DATOS.
             $datos = array(
-                'id_detalle_reporte' => $request->id_detalle_reporte,
-                'id_orden_trabajo' => $request->id_orden_trabajo,
-                'instalacion' => $request->instalacion,
-                'fecha_creacion' => $fecha,
-                'estado' => 1
-
+                'id_usuario' => $request->id_usuario,
+                'titulo' => $request->titulo,
+                'descripcion' => $request->descripcion,
+                'fecha_inicio' => $request->fecha_inicio,
+                'fecha_fin' => $request->fecha_fin,
+                'id_listado_jugadores' => $request->id_listado_jugadores,
             );
 
+
             //INSERCION, ACTUALIZACION U OPERACIONES
-            if ($query = $this->reporte_model->insertReporte('reporte', $datos)) {
+            if ($query = $this->campeonato_model->addCampeonato('campeonato', $datos)) {
                 $response->proceso = 1;
                 $response->id = $query;
                 $response->data = $datos;
             } else {
+                // print_r($this->campeonato_model->addCampeonato('campeonato', $datos));
+
                 $response->errores[] = "El dato no pudo ser ingresado";
             }
 
@@ -186,7 +169,8 @@ class Reporte extends CI_Controller
             redirect('auth/login', 'refresh');
         }
     }
-    public function updateReporte()
+
+    public function updateCampeonato()
     {
         if (true) {
 
@@ -205,43 +189,58 @@ class Reporte extends CI_Controller
             $response->errores = [];
 
             //COMPROBAMOS SI VIENE UN ID MEDIANTE LA PETICION POST, Y SI ES QUE VIENE LO GUARDAMOS (SI NO VIENE EL ID NO ES POSIBLE EDITAR, YA QUE NO ESTAMOS APUNTANDO A NINGUNA TUPLA DE DATOS)
-            if ($this->input->post('id_reporte')) {
-                $request->id = trim($this->security->xss_clean($this->input->post('id_reporte', true)));
+            if ($this->input->post('id_campeonato')) {
+                $request->id = trim($this->security->xss_clean($this->input->post('id_campeonato', true)));
             } else { //SI NO, ALMACENAMOS EL ERROR EN UN ARRAY PARA DEVOLVERLO COMO RESPUESTA.
                 $response->errores[] = "Ocurrió un problema al obtener la solicitud";
             }
 
             if (sizeof($response->errores) == 0) {
                 //VERIFICAMOS LAS VARIABLES QUE RECIBIMOS PARA EDITAR.
-                if (!empty($this->input->post('id_orden_trabajo'))) {
-                    $request->id_orden_trabajo = $this->security->xss_clean($this->input->post('id_orden_trabajo'));
+                if (!empty($this->input->post('id_usuario'))) {
+                    $request->id_usuario = $this->security->xss_clean($this->input->post('id_usuario'));
                 }
-                if (!empty($this->input->post('id_detalle_reporte'))) {
-                    $request->id_detalle_reporte = $this->security->xss_clean($this->input->post('id_detalle_reporte'));
-                }
-                if (!empty($this->input->post('instalacion'))) {
-                    $request->instalacion = $this->security->xss_clean($this->input->post('instalacion'));
-                }
-    
-    
-    
-    
 
+                if (!empty($this->input->post('id_serie'))) {
+                    $request->id_serie = $this->security->xss_clean($this->input->post('id_serie'));
+                }
 
+                if (!empty($this->input->post('id_club'))) {
+                    $request->id_club = $this->security->xss_clean($this->input->post('id_club'));
+                }
+
+                if (!empty($this->input->post('fecha_agenda_inicio'))) {
+                    $request->fecha_inicio_agenda = $this->security->xss_clean($this->input->post('fecha_agenda_inicio'));
+                }
+
+                if (!empty($this->input->post('fecha_agenda_fin'))) {
+                    $request->fecha_fin_agenda = $this->security->xss_clean($this->input->post('fecha_agenda_fin'));
+                }
+
+                if (!empty($this->input->post('festivo'))) {
+                    $request->festivo = $this->security->xss_clean($this->input->post('festivo'));
+                }
+
+                if (!empty($this->input->post('observacion'))) {
+                    $request->observacion = $this->security->xss_clean($this->input->post('observacion'));
+                }
 
                 //ALMACENAMOS LOS DATOS QUE VIENEN DEL POST, QUE REEMPLAZARAN A LA FILA ACTUAL EN LA BASE DE DATOS.
                 $datos = array(
-                    'id_detalle_reporte' => $request->id_detalle_reporte,
-                    'id_orden_trabajo' => $request->id_orden_trabajo,
-                    'instalacion' => $request->instalacion,
-                    'fecha_modificacion' => $fecha
+                    'id_serie' => $request->id_serie,
+                    'id_club' => $request->id_club,
+                    'fecha_agenda_inicio' => $request->fecha_inicio_agenda,
+                    'fecha_agenda_fin' => $request->fecha_fin_agenda,
+                    'festivo' => "1",
+                    'observacion' => $request->observacion,
+                    'id_usuario_1' => 2,
+                    'id_usuario_2' => 3
                 );
             }
 
-
             //SI ES QUE NO HAY ERRORES, PROCEDEMOS A HACER LA PETICION MEDIANTE UN LLAMADO A LA FUNCION DEL MODELO.
             if (sizeof($response->errores) == 0) {
-                if ($query = $this->reporte_model->updateReporte('reporte', 'id_reporte', $datos, $request->id)) {
+                if ($query = $this->campeonato_model->updateCampeonato('agendamiento', 'id_agendamiento', $datos, $request->id)) {
                     //SI EL PROCESO ES EXITOSO, DEVOLVERA UN VALOR DENTRO DEL ARRAY DE RESPUESTA IGUAL A 1
                     $response->proceso = 1;
                     $response->id = $query;
@@ -257,7 +256,7 @@ class Reporte extends CI_Controller
         }
     }
 
-    public function deleteReporte()
+    public function deleteCampeonato()
     {
         if (true) {
 
@@ -276,20 +275,17 @@ class Reporte extends CI_Controller
             $where = '';
 
             //COMPROBAMOS SI VIENE UN ID MEDIANTE LA PETICION POST, Y SI ES QUE VIENE LO GUARDAMOS.
-            if ($this->input->post('id_reporte')) {
-                $request->id = $this->security->xss_clean($this->input->post('id_reporte'));
+            if ($this->input->post('id_agendamiento')) {
+                $request->id = $this->security->xss_clean($this->input->post('id_agendamiento'));
             } else { //SI NO, ALMACENAMOS EL ERROR EN UN ARRAY PARA DEVOLVERLO COMO RESPUESTA.
                 $response->errores[] = "Ocurrió un problema al obtener la solicitud";
             }
 
-            $where = " AND id_reporte=$request->id";
-            $itemEliminado = $this->reporte_model->getReporte($where);
-
-            $response->data = $itemEliminado->result();
+            $where = " id_agendamiento=".$request->id;
 
             //SI ES QUE NO HAY ERRORES, PROCEDEMOS A HACER LA PETICION MEDIANTE UN LLAMADO A LA FUNCION DEL MODELO.
             if (sizeof($response->errores) == 0) {
-                if ($this->reporte_model->updateReporte("reporte", "id_reporte", array('fecha_baja' => $fecha, "estado" => 0), $request->id)) {
+                if ($this->campeonato_model->deleteCampeonato($where)) {
                     //SI EL PROCESO ES EXITOSO, DEVOLVERA UN VALOR DENTRO DEL ARRAY DE RESPUESTA IGUAL A 1
                     $response->proceso = 1;
                 }
@@ -302,4 +298,5 @@ class Reporte extends CI_Controller
             redirect('auth/login', 'refresh');
         }
     }
+
 }

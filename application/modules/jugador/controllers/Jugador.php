@@ -45,5 +45,6 @@ class Jugador extends CI_Controller
             redirect('auth/login', 'refresh');
         }
     }
+    
 
 }
